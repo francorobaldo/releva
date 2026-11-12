@@ -1,0 +1,37 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'app.releva'
+    compileSdk 35
+    defaultConfig {
+        applicationId 'app.releva'
+        minSdk 26
+        targetSdk 35
+        versionCode((System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger())
+        versionName "1." + (System.getenv('GITHUB_RUN_NUMBER') ?: '1')
+    }
+    signingConfigs {
+        release {
+            storeFile file('../signing/releva.jks')
+            storePassword 'releva-store-26'
+            keyAlias 'releva'
+            keyPassword 'releva-store-26'
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    lint { checkReleaseBuilds false; abortOnError false }
+}
+
+dependencies {
+    implementation 'androidx.webkit:webkit:1.12.1'
+    implementation 'androidx.core:core:1.13.1'
+}

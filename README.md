@@ -1,5 +1,7 @@
 # Releva · Relevamiento de obras
 
+**App de Android (APK):** cada vez que se sube un cambio, GitHub arma solo el archivo `Releva.apk` y lo deja en **Releases → ultima** (columna derecha de la página del repositorio). Desde el celular: abrí ese link, descargá `Releva.apk` y abrilo para instalar. Para actualizar, se instala el nuevo encima: los relevamientos no se pierden.
+
 App web para relevar obras desde el celular, la tablet o la compu: muros y ambientes, aberturas, instalaciones eléctricas, sanitarias y de gas, estructura, escaleras, niveles, plantas y asoleamiento.
 
 Es una sola página (`index.html`) que funciona sin servidor. Una vez abierta, se puede **instalar** como app y **funciona sin internet**.
@@ -12,6 +14,8 @@ Es una sola página (`index.html`) que funciona sin servidor. Una vez abierta, s
 | `manifest.webmanifest` | Nombre, colores e íconos para instalarla |
 | `sw.js` | Guarda la app en el dispositivo para usarla sin conexión |
 | `icons/` | Íconos de la app |
+| `android/` | El proyecto de la app de Android (no hace falta tocarlo) |
+| `.github/workflows/build.yml` | Arma el APK solo en GitHub cada vez que subís cambios |
 | `.nojekyll` | Le indica a GitHub Pages que publique los archivos tal cual |
 
 ## Publicarla en GitHub Pages (sin programar)

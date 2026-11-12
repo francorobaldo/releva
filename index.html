@@ -636,12 +636,22 @@ function confirmDel(b){if(b.dataset.ok){return true}b.dataset.ok='1';b.innerHTML
 function newProject(){libPutNow();const d=blank();d.meta.pid=uid();libOpenData(d,'Relevamiento nuevo · el anterior quedó guardado en Mis relevamientos');setTool('room')}
 function fileName(d){return(String((d.meta&&d.meta.name)||'relevamiento').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^a-zA-Z0-9]+/g,'-').replace(/^-|-$/g,'')||'relevamiento')+'.releva'}
 async function exportData(d){const js=JSON.stringify({app:'releva',v:4,S:d}),name=fileName(d);
+  if(window.RelevaNative){modal(`<h3>Guardar archivo</h3><p>${esc(name)}</p><div class="macts" style="flex-wrap:wrap"><button class="btn" data-mx>Cancelar</button><button class="btn" id="exSave">Guardar en Descargas</button><button class="btn pri" id="exShare">Compartir (WhatsApp, mail…)</button></div>`,mm=>{
+    mm.querySelector('#exShare').onclick=()=>{closeModal();RelevaNative.shareFile(js,name)};
+    mm.querySelector('#exSave').onclick=()=>{closeModal();toast(RelevaNative.saveFile(js,name)?'Guardado en Descargas › Releva: '+name:'No se pudo guardar')}});return}
   try{const f=new File([js],name,{type:'application/json'});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],title:(d.meta&&d.meta.name)||'Relevamiento'});return}}catch(e){if(e&&e.name==='AbortError')return}
   const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([js],{type:'application/json'}));a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},1500);toast('Archivo descargado: '+name)}
-function importFile(f){const rd=new FileReader();rd.onload=()=>{try{let d=JSON.parse(rd.result);if(d&&d.S)d=d.S;if(!d||!(d.plantas||d.rooms))throw 0;d.meta=d.meta||{};
+function importFile(f){const rd=new FileReader();rd.onload=()=>importText(rd.result);rd.readAsText(f)}
+window.relevaImportText=t=>importText(t);
+window.relevaFlush=()=>{try{save();libPutNow()}catch(e){}};
+window.relevaBack=()=>{if(!$('#modal').classList.contains('hidden')){closeModal();return true}
+  if(document.body.classList.contains('lp-open')||document.body.classList.contains('rp-open')){document.body.classList.remove('lp-open','rp-open');return true}
+  if(draft){cancelDraft();return true}if(meas.pts.length){meas.pts=[];renderOverlay();renderDraftBar();return true}if(landAsst){endLand();return true}if(copyPick){copyPick=null;renderCopyPad();renderOverlay();return true}
+  if(msel.length){clearMulti();return true}if(sel){sel=null;hideQC();render();renderRight();return true}if(tool!=='select'){setTool('select');return true}return false};
+function importText(txt){{try{let d=JSON.parse(txt);if(d&&d.S)d=d.S;if(!d||!(d.plantas||d.rooms))throw 0;d.meta=d.meta||{};
     // si ya existe uno con el mismo id, se abre como copia para no pisarlo
     if(d.meta.pid&&libIdx().some(x=>x.id===d.meta.pid)||d.meta.pid===S.meta.pid){d.meta.pid=uid();d.meta.name=(d.meta.name||'Relevamiento')+' (copia)'}
-    if(!d.meta.pid)d.meta.pid=uid();libPutNow();closeModal();libOpenData(d,'Archivo abierto: '+(d.meta.name||''))}catch(e){toast('Ese archivo no es un relevamiento de Releva')}};rd.readAsText(f)}
+    if(!d.meta.pid)d.meta.pid=uid();libPutNow();closeModal();libOpenData(d,'Archivo abierto: '+(d.meta.name||''))}catch(e){toast('Ese archivo no es un relevamiento de Releva')}}}
 
 function load(){try{const d=JSON.parse(localStorage.getItem('releva.v4')||localStorage.getItem('releva.v3')||localStorage.getItem('releva.v2'));if(d&&d.S&&(d.S.plantas||d.S.rooms)){S=attach(d.S);S.meta.rules=S.meta.rules||{strictWater:false};if(d.layers)Object.assign(layers,d.layers);return true}}catch(e){}return false}
 
@@ -1941,7 +1951,7 @@ function addByLen(dx,dy){const inp=$('#dlen'),v=pm(inp.value);if(!v||v<=0){toast
 /* ===================== Inicio ===================== */
 // app instalable y sin conexión (solo cuando se sirve desde una web, como GitHub Pages)
 const APP_VER='1.0';
-if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)&&!/claude|anthropic/.test(location.host)){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(reg=>{reg.addEventListener('updatefound',()=>{const w=reg.installing;if(w)w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)toast('Hay una versión nueva de Releva: cerrá y volvé a abrir la app')})})}).catch(()=>{})})}
+if('serviceWorker' in navigator&&/^https?:/.test(location.protocol)&&!/claude|anthropic|appassets/.test(location.host)&&!window.RelevaNative){window.addEventListener('load',()=>{navigator.serviceWorker.register('sw.js').then(reg=>{reg.addEventListener('updatefound',()=>{const w=reg.installing;if(w)w.addEventListener('statechange',()=>{if(w.state==='installed'&&navigator.serviceWorker.controller)toast('Hay una versión nueva de Releva: cerrá y volvé a abrir la app')})})}).catch(()=>{})})}
 let instEv=null;window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();instEv=e;const b=document.querySelector('[data-m="inst"]');if(b)b.style.display=''});
 resize();if(!load())S=blank();lastSnap=snap();syncMeta();renderPl();updUndo();renderRail();renderLeft();fit(false);renderAll();renderRight();
 </script>
